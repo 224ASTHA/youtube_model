@@ -53,11 +53,10 @@ const userSchema = new Schema(
 
 // pre m aagar tum baata doge ki kiske pehle kya krna hai 
 // ex:- save se pehle kuch karana hai so ese likhenge
-userSchema.pre("save", async function (next) {
-    if(!this.isModified("password")) return next();
+userSchema.pre("save", async function () {
+    if(!this.isModified("password")) return;
 
-    this.password = bcrypt.hash(this.password, 10)
-    next()
+    this.password = await bcrypt.hash(this.password, 10)
 })
 
 // custom methods
@@ -66,6 +65,8 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 }
 // JWT is bearer token => yeh token jiske v pass hai usko hum data bhej denge
 
+// yeh short duration m expire kar diya jaata hai
+// Can access resoure of authentication
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
@@ -80,6 +81,11 @@ userSchema.methods.generateAccessToken = function(){
         }
     )
 }
+
+// Yeh thoda long duration tak rakhte hain - expire nhi karate jaldi
+// Jab tak refresh token ka validation haina ya duration hai.. 
+// tab tak baar baar password of authentication nhi dena padega ... 
+// Refresh token jab tak valid hai tab tak woh access token generate krke deta rahega
 userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {

@@ -9,9 +9,39 @@
 // console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('MONGO') || key.includes('PORT')));
 
 
+// import dotenv from 'dotenv';
+// import connectDB from "./db/index.js";
+// import { config } from "./config.js";
+
+// console.log('PORT:', config.PORT);
+// console.log('MONGODB_URI:', config.MONGODB_URI);
+
+// connectDB()
+// .then(() => {
+//     app.listen(process.env.PORT || 8000, () => {
+//         console.log(`Server is running at port : ${process.env.PORT}`);
+//         app.on("error", (error) => {
+//             console.log("ERR", error);
+//             throw error
+//         })
+//     })
+// })
+// .catch((err) => {
+//     console.log("MONGO DB connection failed!!", err)
+// })
+
+
+// this will return a promise also
+
+
 import dotenv from 'dotenv';
+dotenv.config(); // Load .env file
+
+import express from 'express';
 import connectDB from "./db/index.js";
 import { config } from "./config.js";
+
+import { app } from './app.js';
 
 console.log('PORT:', config.PORT);
 console.log('MONGODB_URI:', config.MONGODB_URI);
@@ -20,21 +50,16 @@ connectDB()
 .then(() => {
     app.listen(process.env.PORT || 8000, () => {
         console.log(`Server is running at port : ${process.env.PORT}`);
-        app.on("error", (error) => {
-            console.log("ERR", error);
-            throw error
-        })
+    })
+    
+    app.on("error", (error) => {
+        console.log("ERR", error);
+        throw error
     })
 })
 .catch((err) => {
     console.log("MONGO DB connection failed!!", err)
 })
-
-
-// this will return a promise also
-
-
-
 
 
 
