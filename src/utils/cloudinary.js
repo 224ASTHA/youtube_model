@@ -30,7 +30,29 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-export {uploadOnCloudinary}
+export const deleteFromCloudinary = async (imageUrl) => {
+    try {
+        if (!imageUrl) return null;
+        
+        // Extract public_id from the Cloudinary URL
+        // URL format: https://res.cloudinary.com/<cloud>/image/upload/v123456/public_id.jpg
+        const urlParts = imageUrl.split("/")
+        const filenameWithExt = urlParts[urlParts.length - 1]  // "public_id.jpg"
+        const publicId = filenameWithExt.split(".")[0]          // "public_id"
+        
+        const result = await cloudinary.uploader.destroy(publicId)
+        return result
+        
+    } catch (error) {
+        console.error("Error deleting image from Cloudinary:", error)
+        return null
+    }
+}
+
+export {
+    uploadOnCloudinary,
+    deleteFromCloudinary
+}
 
 // Jahan Jahan file upload ki jarurat padegi
 // Wahan wahan multer ko upload kar denge
