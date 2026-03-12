@@ -388,6 +388,68 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
     )
 })
 
+// We want to have nested lookup in the users and videos as just taking it once will not give us the complete values
+const getWatchHistory = asyncHandler(async(req, res) => {
+    // normally req.user._id krne se sirf hume sirf string milti hai 
+    // But when it's pass through the mongoose it will give us the complete id of mongoDB
+    const user = await User.aggregate([
+        {
+            $match: {
+                // Aggregation pipeline ka saara code direct jaata hai , mongoose ke through nhi
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            // This is collecting the video to the user
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                // Sub pipeline lagana padega nhi toh owners ka kuch nhi milega
+                // It's done to get details about the video owner
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        // jitna v project kiye hain owner field m he chala jayega
+                                        fullname: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    // Isse ek aaray milega jiske start ke value m saara info hoga 
+                    {
+                        $addFields:{
+                            owner: {
+                                $first: "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user[0].watchHistory,
+            "Watch History fetched successfully"
+        )
+    )
+})
+
 export {
     registerUser,
     loginUser,
@@ -398,5 +460,6 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchHistory
 }
